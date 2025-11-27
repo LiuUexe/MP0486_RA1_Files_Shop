@@ -94,8 +94,5 @@ public class InventoryView extends JDialog {
         btnBack.setFont(new Font("Tahoma", Font.PLAIN, 14));
         btnBack.addActionListener(e -> dispose()); // Cierra el diálogo
         buttonPane.add(btnBack);
-
-
-        setVisible(true);
     }
 }

@@ -1,12 +1,21 @@
 package dao;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.security.Timestamp;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Iterator;
 
+import model.Amount;
 import model.Employee;
 import model.Product;
 
@@ -39,40 +48,129 @@ public class DaoImplJDBC implements Dao {
 				e.printStackTrace();
 			}
 		}
-		
+
 	}
 
 	@Override
 	public Employee getEmployee(int employeeId, String password) {
 		Employee employee = null;
 		String query = "select * from employee where employeeId= ? and password = ? ";
-		
-		try (PreparedStatement ps = connection.prepareStatement(query)) { 
-    		ps.setInt(1,employeeId);
-    	  	ps.setString(2,password);
-    	  	//System.out.println(ps.toString());
-            try (ResultSet rs = ps.executeQuery()) {
-            	if (rs.next()) {
-            		employee = new Employee(rs.getInt(1), rs.getString(2), rs.getString(3));
-            	}
-            }
-        } catch (SQLException e) {
+
+		try (PreparedStatement ps = connection.prepareStatement(query)) {
+			ps.setInt(1, employeeId);
+			ps.setString(2, password);
+			// System.out.println(ps.toString());
+			try (ResultSet rs = ps.executeQuery()) {
+				if (rs.next()) {
+					employee = new Employee(rs.getInt(1), rs.getString(2), rs.getString(3));
+				}
+			}
+		} catch (SQLException e) {
 			// in case error in SQL
 			e.printStackTrace();
 		}
-    	return employee;
+		return employee;
 	}
 
 	@Override
 	public ArrayList<Product> getInventory() {
-		// TODO Auto-generated method stub
-		return null;
+		ArrayList<Product> products = new ArrayList<>();
+		String query = "Select * from inventory";
+		try (PreparedStatement ps = connection.prepareStatement(query)) {
+			ResultSet rs = ps.executeQuery();
+
+			while (rs.next()) {
+				Product p = new Product(rs.getString("name"), new Amount(rs.getDouble("wholesalerprice")),
+						rs.getBoolean("available"), rs.getInt("stock"));
+
+				p.setId(rs.getInt("id"));
+				p.setPublicPrice(new Amount(rs.getDouble("publicPrice")));
+			}
+		} catch (Exception e) {
+			// TODO: handle exception
+		}
+		return products;
 	}
 
 	@Override
 	public boolean writeInventory(ArrayList<Product> inventory) {
-		// TODO Auto-generated method stub
-		return false;
+
+		String sql = "INSERT INTO historical_inventory (id_product, name, wholesalerprice, available, stock, created_at)"
+				+ "VALUES (?, ?, ?, ?, ?, now())";
+
+		try (PreparedStatement ps = connection.prepareStatement(sql)) {
+
+			for (Product product : inventory) {
+				ps.setInt(1, product.getId());
+				ps.setString(2, product.getName());
+				ps.setDouble(3, product.getWholesalerPrice().getValue());
+				ps.setBoolean(4, product.isAvailable());
+				ps.setInt(5, product.getStock());
+				ps.addBatch();
+
+			}
+			ps.executeBatch();
+			return true;
+		} catch (SQLException e) {
+			e.printStackTrace();
+			return false;
+		}
+
+	}
+
+	@Override
+	public void addProduct(Product product) {
+		String sql = "INSERT INTO inventory " + "(id, name, wholesalerprice, available, stock) "
+				+ "VALUES (?, ?, ?, ?, ?)";
+
+		try (PreparedStatement ps = connection.prepareStatement(sql)) {
+
+			ps.setInt(1, product.getId());
+			ps.setString(2, product.getName());
+			ps.setDouble(3, product.getWholesalerPrice().getValue());
+			ps.setBoolean(4, product.isAvailable());
+			ps.setInt(5, product.getStock());
+
+			ps.executeUpdate();
+
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+
+	}
+
+	@Override
+	public void updateProduct(Product product) {
+		String sql = "UPDATE inventory SET " + "name = ?, wholesalerprice = ?, available = ?, stock = ? "
+				+ "WHERE id = ?";
+
+		try (PreparedStatement ps = connection.prepareStatement(sql)) {
+
+			ps.setString(1, product.getName());
+			ps.setDouble(2, product.getWholesalerPrice().getValue());
+			ps.setBoolean(3, product.isAvailable());
+			ps.setInt(4, product.getStock());
+			ps.setInt(5, product.getId());
+
+			ps.executeUpdate();
+
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+
+	}
+
+	@Override
+	public void deleteProduct(int id) {
+		String sql = "DELETE FROM inventory WHERE id = ?";
+
+		try (PreparedStatement ps = connection.prepareStatement(sql)) {
+			ps.setInt(1, id);
+			ps.executeUpdate();
+
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
 	}
 
 }

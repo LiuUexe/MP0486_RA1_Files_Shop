@@ -96,7 +96,7 @@ public class DaoImplFile implements Dao {
 		return list;
 	}
 
-	private void addProduct(Product product) {
+	public void addProduct(Product product) {
 		// TODO Auto-generated method stub
 
 	}
@@ -140,6 +140,18 @@ public class DaoImplFile implements Dao {
 	public Employee getEmployee(int employeeId, String password) {
 		// TODO Auto-generated method stub
 		return null;
+	}
+
+	@Override
+	public void updateProduct(Product product) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void deleteProduct(int id) {
+		// TODO Auto-generated method stub
+		
 	}
 
 }
