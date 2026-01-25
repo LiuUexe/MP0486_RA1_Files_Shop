@@ -13,7 +13,6 @@ import java.util.ArrayList;
 import model.Amount;
 import model.Employee;
 import model.Product;
-import model.Sale;
 
 public class DaoImplFile implements Dao {
 
@@ -96,6 +95,7 @@ public class DaoImplFile implements Dao {
 		return list;
 	}
 
+	@Override
 	public void addProduct(Product product) {
 		// TODO Auto-generated method stub
 
@@ -106,7 +106,6 @@ public class DaoImplFile implements Dao {
 		LocalDate today = LocalDate.now();
 		String fileName = "inventory_" + today.toString() + ".txt";
 
-		
 		String userDesktop = System.getProperty("user.home") + File.separator + "Desktop";
 		File f = new File(userDesktop + File.separator + fileName);
 
@@ -114,9 +113,8 @@ public class DaoImplFile implements Dao {
 
 			int counter = 1;
 			for (Product product : inventory) {
-				pw.println(counter + ";Product:" + product.getName() + ";Stock:" + product.getStock() + ";PublicPrice:"
-						+ product.getPublicPrice().getValue() + ";WholesalerPrice:"
-						+ product.getWholesalerPrice().getValue() + ";");
+				pw.println(counter + ";Product:" + product.getName() + ";Stock:" + product.getStock() + ";Price:"
+						+ product.getPrice() + ";");
 				counter++;
 			}
 
@@ -145,13 +143,13 @@ public class DaoImplFile implements Dao {
 	@Override
 	public void updateProduct(Product product) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
 	public void deleteProduct(int id) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 }

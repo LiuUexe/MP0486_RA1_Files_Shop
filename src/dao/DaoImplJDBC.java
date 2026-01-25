@@ -4,16 +4,13 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.security.Timestamp;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Iterator;
 
 import model.Amount;
 import model.Employee;
@@ -75,27 +72,31 @@ public class DaoImplJDBC implements Dao {
 	@Override
 	public ArrayList<Product> getInventory() {
 		ArrayList<Product> products = new ArrayList<>();
-		String query = "Select * from inventory";
-		try (PreparedStatement ps = connection.prepareStatement(query)) {
-			ResultSet rs = ps.executeQuery();
+		String query = "SELECT * FROM inventory";
+
+		try (PreparedStatement ps = connection.prepareStatement(query); ResultSet rs = ps.executeQuery()) {
 
 			while (rs.next()) {
-				Product p = new Product(rs.getString("name"), new Amount(rs.getDouble("wholesalerprice")),
-						rs.getBoolean("available"), rs.getInt("stock"));
-
+				Product p = new Product();
 				p.setId(rs.getInt("id"));
-				p.setPublicPrice(new Amount(rs.getDouble("publicPrice")));
+				p.setName(rs.getString("name"));
+				p.setPrice(rs.getDouble("price"));
+				p.setAvailable(rs.getBoolean("available"));
+				p.setStock(rs.getInt("stock"));
+
+				products.add(p);
 			}
-		} catch (Exception e) {
-			// TODO: handle exception
+		} catch (SQLException e) {
+			e.printStackTrace();
 		}
+
 		return products;
 	}
 
 	@Override
 	public boolean writeInventory(ArrayList<Product> inventory) {
 
-		String sql = "INSERT INTO historical_inventory (id_product, name, wholesalerprice, available, stock, created_at)"
+		String sql = "INSERT INTO historical_inventory (id_product, name, price, available, stock, created_at) "
 				+ "VALUES (?, ?, ?, ?, ?, now())";
 
 		try (PreparedStatement ps = connection.prepareStatement(sql)) {
@@ -103,51 +104,45 @@ public class DaoImplJDBC implements Dao {
 			for (Product product : inventory) {
 				ps.setInt(1, product.getId());
 				ps.setString(2, product.getName());
-				ps.setDouble(3, product.getWholesalerPrice().getValue());
+				ps.setDouble(3, product.getPrice());
 				ps.setBoolean(4, product.isAvailable());
 				ps.setInt(5, product.getStock());
 				ps.addBatch();
-
 			}
+
 			ps.executeBatch();
 			return true;
+
 		} catch (SQLException e) {
 			e.printStackTrace();
 			return false;
 		}
-
 	}
 
 	@Override
 	public void addProduct(Product product) {
-		String sql = "INSERT INTO inventory " + "(id, name, wholesalerprice, available, stock) "
-				+ "VALUES (?, ?, ?, ?, ?)";
+		String sql = "INSERT INTO inventory (name, price, available, stock) VALUES (?, ?, ?, ?)";
 
 		try (PreparedStatement ps = connection.prepareStatement(sql)) {
-
-			ps.setInt(1, product.getId());
-			ps.setString(2, product.getName());
-			ps.setDouble(3, product.getWholesalerPrice().getValue());
-			ps.setBoolean(4, product.isAvailable());
-			ps.setInt(5, product.getStock());
+			ps.setString(1, product.getName());
+			ps.setDouble(2, product.getPrice());
+			ps.setBoolean(3, product.isAvailable());
+			ps.setInt(4, product.getStock());
 
 			ps.executeUpdate();
 
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
-
 	}
 
 	@Override
 	public void updateProduct(Product product) {
-		String sql = "UPDATE inventory SET " + "name = ?, wholesalerprice = ?, available = ?, stock = ? "
-				+ "WHERE id = ?";
+		String sql = "UPDATE inventory SET name = ?, price = ?, available = ?, stock = ? WHERE id = ?";
 
 		try (PreparedStatement ps = connection.prepareStatement(sql)) {
-
 			ps.setString(1, product.getName());
-			ps.setDouble(2, product.getWholesalerPrice().getValue());
+			ps.setDouble(2, product.getPrice());
 			ps.setBoolean(3, product.isAvailable());
 			ps.setInt(4, product.getStock());
 			ps.setInt(5, product.getId());
@@ -157,7 +152,6 @@ public class DaoImplJDBC implements Dao {
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
-
 	}
 
 	@Override

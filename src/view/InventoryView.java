@@ -41,8 +41,7 @@ public class InventoryView extends JDialog {
         String[] columnNames = {
             "ID",
             "Nombre",
-            "Precio Público (€)",
-            "Precio Mayorista (€)",
+            "Precio (€)",
             "Disponible",
             "Stock"
         };
@@ -66,14 +65,14 @@ public class InventoryView extends JDialog {
 
         // Llenar tabla con datos
         for (Product p : products) {
-            Object[] row = {
-                p.getId(),
-                p.getName(),
-                String.format("%.2f", p.getPublicPrice().getValue()),
-                String.format("%.2f", p.getWholesalerPrice().getValue()),
-                p.isAvailable() ? "Sí" : "No",
-                p.getStock()
-            };
+        	Object[] row = {
+        		    p.getId(),
+        		    p.getName(),
+        		    String.format("%.2f", p.getPrice()),
+        		    p.isAvailable() ? "Sí" : "No",
+        		    p.getStock()
+        		};
+
             model.addRow(row);
         }
 

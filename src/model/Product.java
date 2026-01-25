@@ -1,25 +1,47 @@
 package model;
 
+import javax.persistence.*;
+
+@Entity
+@Table(name = "inventory")
 public class Product {
+
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(name = "id")
 	private int id;
-    private String name;
-    private Amount publicPrice;
-    private Amount wholesalerPrice;
-    private boolean available;
-    private int stock;
-    private static int totalProducts;
-    
-    public final static double EXPIRATION_RATE=0.60;
-    
+
+	@Column(name = "name")
+	private String name;
+
+	@Column(name = "wholesalerprice")
+	private double wholesalerPrice;
+
+	@Column(name = "available")
+	private boolean available;
+
+	@Column(name = "stock")
+	private int stock;
+
+	@Column(name = "price")
+	private double price;
+
+	@Transient
+	private static int totalProducts;
+
+	public final static double EXPIRATION_RATE = 0.60;
+
+	public Product() {
+	}
+
 	public Product(String name, Amount wholesalerPrice, boolean available, int stock) {
 		super();
-		this.id = totalProducts+1;
 		this.name = name;
-		this.wholesalerPrice = wholesalerPrice;
-		this.publicPrice = new Amount(wholesalerPrice.getValue() * 2);
 		this.available = available;
 		this.stock = stock;
-		totalProducts++;
+
+		this.wholesalerPrice = wholesalerPrice.getValue();
+		this.price = wholesalerPrice.getValue() * 2;
 	}
 
 	public int getId() {
@@ -38,22 +60,12 @@ public class Product {
 		this.name = name;
 	}
 
-	
-
-	public Amount getPublicPrice() {
-		return publicPrice;
+	public double getPrice() {
+		return price;
 	}
 
-	public void setPublicPrice(Amount publicPrice) {
-		this.publicPrice = publicPrice;
-	}
-
-	public Amount getWholesalerPrice() {
-		return wholesalerPrice;
-	}
-
-	public void setWholesalerPrice(Amount wholesalerPrice) {
-		this.wholesalerPrice = wholesalerPrice;
+	public void setPrice(double price) {
+		this.price = price;
 	}
 
 	public boolean isAvailable() {
@@ -62,6 +74,14 @@ public class Product {
 
 	public void setAvailable(boolean available) {
 		this.available = available;
+	}
+
+	public double getWholesalerPrice() {
+		return wholesalerPrice;
+	}
+
+	public void setWholesalerPrice(double wholesalerPrice) {
+		this.wholesalerPrice = wholesalerPrice;
 	}
 
 	public int getStock() {
@@ -79,24 +99,13 @@ public class Product {
 	public static void setTotalProducts(int totalProducts) {
 		Product.totalProducts = totalProducts;
 	}
-	
+
 	public void expire() {
-		this.publicPrice.setValue(this.getPublicPrice().getValue()*EXPIRATION_RATE); ;
+		this.price = this.price * EXPIRATION_RATE;
 	}
 
 	@Override
 	public String toString() {
-		return "Product [name=" + name + ", publicPrice=" + publicPrice + ", wholesalerPrice=" + wholesalerPrice
-				+ ", available=" + available + ", stock=" + stock + "]";
+		return "Product [name=" + name + ", price=" + price + ", available=" + available + ", stock=" + stock + "]";
 	}
-
-	
-	
-	
-	
-	
-
-    
-
-    
 }
